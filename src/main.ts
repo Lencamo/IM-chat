@@ -10,3 +10,5 @@ const app = createApp(App)
 app.use(createPinia()).use(router)
 
 app.mount('#app')
+
+export default app
