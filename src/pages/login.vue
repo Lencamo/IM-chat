@@ -3,6 +3,7 @@
 
   <div class="login-container">
     <a-card style="width: 300px">
+      <h1 class="title">腾讯-即时通讯IM</h1>
       <a-form
         :model="formState"
         name="basic"
@@ -38,9 +39,9 @@
 
 <script setup lang="ts">
 import WavesBg from '@/components/waves.vue'
-
 import { reactive } from 'vue'
 import { message } from 'ant-design-vue'
+import { useRouter } from 'vue-router'
 
 interface FormState {
   username: string
@@ -51,7 +52,10 @@ const formState = reactive<FormState>({
   password: ''
 })
 
+const router = useRouter()
+
 const onLogin = (values: any) => {
+  router.push('/layout')
   message.success('登录成功')
 }
 
@@ -70,5 +74,9 @@ const onFinishFailed = (errorInfo: any) => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.title {
+  text-align: center;
 }
 </style>
