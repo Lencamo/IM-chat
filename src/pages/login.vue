@@ -42,6 +42,9 @@ import WavesBg from '@/components/waves.vue'
 import { reactive } from 'vue'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
+import { genTestUserSig } from '../../debug/index.js'
+
+import { useChatStore } from './../stores/chat'
 
 interface FormState {
   username: string
@@ -53,10 +56,23 @@ const formState = reactive<FormState>({
 })
 
 const router = useRouter()
+const chatStore = useChatStore()
 
 const onLogin = (values: any) => {
   router.push('/layout')
   message.success('登录成功')
+
+  // ITM获取秘钥
+  /**
+   * { SDKAppID, userSig }
+   */
+  const { userSig } = genTestUserSig({
+    SDKAppID: 1400809293,
+    secretKey: 'd6f62618600065890a5e3f03ef5f5a36f5ff39333da8f986420e46b1a658ed24',
+    userID: formState.username
+  })
+  // ITM登录
+  chatStore.timCore.loginTIM({ userSig, userID: formState.username })
 }
 
 const onFinishFailed = (errorInfo: any) => {

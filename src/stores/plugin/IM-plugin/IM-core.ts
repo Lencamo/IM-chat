@@ -1,13 +1,18 @@
-import TIM from 'tim-js-sdk'
+import TIM, { ChatSDK } from 'tim-js-sdk'
 import TIMUploadPlugin from 'tim-upload-plugin'
-import type { IMCorePorps } from './type'
+import type { initTimProps, loginTIMProps } from './type'
 
 export default class IMCore {
-  constructor(props: IMCorePorps) {
+  public tim: ChatSDK | undefined
+
+  public userID = ''
+
+  constructor(props: initTimProps) {
     this.initTimSDK(props.SDKAppID)
   }
 
-  private initTimSDK(SDKAppID: number) {
+  // 1、初始化TIM
+  private initTimSDK = (SDKAppID: number) => {
     let options = {
       SDKAppID // 接入时需要将0替换为您的即时通信 IM 应用的 SDKAppID
     }
@@ -20,5 +25,14 @@ export default class IMCore {
 
     // 注册腾讯云即时通信 IM 上传插件
     tim.registerPlugin({ 'tim-upload-plugin': TIMUploadPlugin })
+
+    this.tim = tim
+  }
+
+  // 2、登录TIM
+  public loginTIM = async (options: loginTIMProps) => {
+    // 登录
+    await this.tim?.login(options)
+    this.userID = options.userID
   }
 }
