@@ -12,6 +12,7 @@
   "dependencies": {
     "ant-design-vue": "^3.2.20",
     "pinia": "^2.0.35",
+    "sass": "^1.62.1",
     "three": "^0.152.2",
     "tim-js-sdk": "^2.27.2",
     "tim-profanity-filter-plugin": "^0.9.0",
