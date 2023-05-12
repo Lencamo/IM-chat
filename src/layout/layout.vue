@@ -31,7 +31,7 @@
     </a-layout>
   </a-layout>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import {
   UserOutlined,
   VideoCameraOutlined,
@@ -39,54 +39,44 @@ import {
   MenuFoldOutlined,
   LogoutOutlined
 } from '@ant-design/icons-vue'
-import { defineComponent, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useChatStore } from '@/stores/chat'
 
-export default defineComponent({
-  components: {
-    UserOutlined,
-    VideoCameraOutlined,
-    MenuUnfoldOutlined,
-    MenuFoldOutlined,
-    LogoutOutlined
-  },
-  setup() {
-    const title = ref<string>('腾讯-即时通讯IM')
-    const collapsed = ref<boolean>(false)
+const title = ref<string>('腾讯-即时通讯IM')
+const collapsed = ref<boolean>(false)
+const selectedKeys = ref<string[]>(['1'])
 
-    const router = useRouter()
+// 引入路由
+const router = useRouter()
+// 引入pinia
+const chatStore = useChatStore()
 
-    // 点击侧边栏事件
-    const changeNav = function ({ key }: { key: string }) {
-      router.push(key)
-    }
+// 将TIM的接收消息 存储到 Pinia（后续显示即可）
+chatStore.timCore.messageReceived = (event) => {
+  chatStore.subscribeMessage(event)
+}
 
-    // 点击折叠图标
-    const foldChange = function () {
-      collapsed.value = !collapsed.value
+// 点击侧边栏事件
+const changeNav = function ({ key }: { key: string }) {
+  router.push(key)
+}
 
-      if (collapsed.value) {
-        title.value = ''
-      } else {
-        title.value = '腾讯-即时通讯IM'
-      }
-    }
+// 点击折叠图标
+const foldChange = function () {
+  collapsed.value = !collapsed.value
 
-    // 点击退出登录
-    const logout = function () {
-      router.push('/login')
-    }
-
-    return {
-      changeNav,
-      foldChange,
-      logout,
-      title,
-      selectedKeys: ref<string[]>(['1']),
-      collapsed
-    }
+  if (collapsed.value) {
+    title.value = ''
+  } else {
+    title.value = '腾讯-即时通讯IM'
   }
-})
+}
+
+// 点击退出登录
+const logout = function () {
+  router.push('/login')
+}
 </script>
 <style>
 .layout {

@@ -27,6 +27,8 @@
           class="textarea"
           placeholder="请输入聊天内容"
           :auto-size="{ minRows: 2, maxRows: 5 }"
+          @pressEnter="sendMsg"
+          v-model:value="chatSendMsg"
         />
       </div>
     </a-card>
@@ -34,7 +36,11 @@
 </template>
 
 <script setup lang="ts">
+import { useChatStore } from '@/stores/chat'
 import { ref } from 'vue'
+
+// 引入pinia
+const chatStore = useChatStore()
 
 const msgData = ref([
   {
@@ -58,6 +64,17 @@ const msgData = ref([
     flow: 'to'
   }
 ])
+
+const chatSendMsg = ref('')
+
+// 通过TIM 发送用户消息
+const sendMsg = () => {
+  console.log(chatSendMsg.value)
+  // 默认全部发给admin用户
+  chatStore.timCore.sendMessage('admin', {
+    text: chatSendMsg.value
+  })
+}
 </script>
 
 <style scoped lang="scss">

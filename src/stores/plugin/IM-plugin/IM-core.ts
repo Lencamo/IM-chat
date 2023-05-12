@@ -1,6 +1,11 @@
 import TIM, { ChatSDK } from 'tim-js-sdk'
 import TIMUploadPlugin from 'tim-upload-plugin'
-import type { initTimProps, loginTIMProps } from './type'
+import type {
+  getMessageProps,
+  initTimProps,
+  loginTIMProps,
+  messageReceivedEventProps
+} from './type'
 
 export default class IMCore {
   public tim: ChatSDK | undefined
@@ -34,5 +39,48 @@ export default class IMCore {
     // 登录
     await this.tim?.login(options)
     this.userID = options.userID
+
+    // 绑定监听事件
+    this.bindTIMEvent()
+  }
+
+  private bindTIMEvent = () => {
+    let onSdkReady = () => {
+      console.log('SDK准备完毕')
+      // 接收消息
+      this.tim?.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived, this)
+    }
+
+    this.tim?.on(TIM.EVENT.SDK_READY, onSdkReady, this)
+  }
+
+  private onMessageReceived = (event: messageReceivedEventProps) => {
+    // event.data - 存储 Message 对象的数组 - [Message]
+    console.log('接收到一条消息', event)
+
+    // 暴露消息
+    this.messageReceived(event)
+  }
+
+  public messageReceived = (event: messageReceivedEventProps) => {}
+
+  // 3、发送消息
+  private getTextMessage = (userID: string, payload: getMessageProps) => {
+    return this.tim?.createTextMessage({
+      to: userID,
+      conversationType: TIM.TYPES.CONV_C2C,
+      // priority: TIM.TYPES.MSG_PRIORITY_NORMAL,
+      payload, // 消息内容的容器
+      needReadReceipt: true
+      // cloudCustomData: 'your cloud custom data'
+    })
+  }
+
+  public sendMessage = async (userID: string, payload: getMessageProps) => {
+    // 获取文本消息
+    const message = this.getTextMessage(userID, payload)
+    // 发送消息
+    await this.tim?.sendMessage(message!)
+    console.log('发送消息成功')
   }
 }
