@@ -1,40 +1,37 @@
-# IM-chat
+## IM-chat
 
-This template should help get you started developing with Vue 3 in Vite.
+&emsp;&emsp;第一个 vue3 + vite + Pinia + 腾讯 IM 实时通信 的项目
 
-## Recommended IDE Setup
+## 知识点记录
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+- Pinia 的`$onAction`使用场景
 
-## Type Support for `.vue` Imports in TS
+> 官方描述：[$onAction](https://pinia.vuejs.org/zh/api/interfaces/pinia._StoreWithState.html#onaction)
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+> 设置一个回调，当一个 action 即将被调用时，就会被调用
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
-
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+```ts
+// 订阅-接收消息
+chatStore.$onAction(({ name, args }) => {
+  console.log('收到的消息', args)
+  if (name === 'subscribeMessage') {
+    currentChat.value.push(...args[0].data)
+  }
+})
 ```
 
-### Compile and Hot-Reload for Development
+- Typescript 的 Partial 使用
 
-```sh
-npm run dev
-```
+> 官方描述：[Partial](https://www.typescriptlang.org/docs/handbook/utility-types.html#partialtype)
 
-### Type-Check, Compile and Minify for Production
+> 构造一个类型，并将 Type 的所有属性都设置为可选。
 
-```sh
-npm run build
+```ts
+  state() {
+    return {
+      conversationList: [] as Partial<Conversation>[], // 会话列表
+      selectedKeys: [] as string[], // 会话选择
+      historyMessage: [] as messageType[] // 消息
+    }
+  },
 ```

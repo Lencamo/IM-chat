@@ -21,7 +21,7 @@ export const useChatStore = defineStore('chat', {
     return {
       conversationList: [] as Partial<Conversation>[], // 会话列表
       selectedKeys: [] as string[], // 会话选择
-      historyMessage: [] as messageType[]
+      historyMessage: [] as messageType[] // 消息
     }
   },
 
