@@ -2,8 +2,10 @@
   <div class="chat-box">
     <a-card class="chat-card">
       <!-- 左侧用户区 -->
-      <a-menu class="chater-list" mode="inline">
-        <a-menu-item key="1">Option 1</a-menu-item>
+      <a-menu v-model:selectedKeys="chatStore.selectedKeys" class="chater-list" mode="inline">
+        <a-menu-item v-for="item in chatStore.conversationList" :key="item.userProfile?.userID">
+          {{ item.userProfile?.userID }}
+        </a-menu-item>
       </a-menu>
       <!-- 右侧聊天区 -->
       <div class="chater-msg-box">
@@ -74,6 +76,11 @@ const sendMsg = () => {
   chatStore.timCore.sendMessage('admin', {
     text: chatSendMsg.value
   })
+}
+
+// SDK准备完毕后 获取会话列表
+chatStore.timCore.onReady = () => {
+  chatStore.getSessionList()
 }
 </script>
 

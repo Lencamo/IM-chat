@@ -10,6 +10,7 @@ import type {
 export default class IMCore {
   public tim: ChatSDK | undefined
 
+  // 备用
   public userID = ''
 
   constructor(props: initTimProps) {
@@ -32,13 +33,26 @@ export default class IMCore {
     tim.registerPlugin({ 'tim-upload-plugin': TIMUploadPlugin })
 
     this.tim = tim
+
+    // 身份校验
+    this.checkLogin()
+  }
+
+  private checkLogin = () => {
+    const loginTIMProps = JSON.parse(localStorage.getItem('loginTIMProps') || '{}')
+    if (loginTIMProps.userID) {
+      this.loginTIM(loginTIMProps)
+    }
   }
 
   // 2、登录TIM
   public loginTIM = async (options: loginTIMProps) => {
     // 登录
     await this.tim?.login(options)
+    // - 其他函数使用
     this.userID = options.userID
+    // - 持久化存储（用于身份验证）
+    localStorage.setItem('loginTIMProps', JSON.stringify(options))
 
     // 绑定监听事件
     this.bindTIMEvent()
@@ -47,6 +61,9 @@ export default class IMCore {
   private bindTIMEvent = () => {
     let onSdkReady = () => {
       console.log('SDK准备完毕')
+      // 待执行函数 -- 暴露操作
+      this.onReady()
+
       // 接收消息
       this.tim?.on(TIM.EVENT.MESSAGE_RECEIVED, this.onMessageReceived, this)
     }
@@ -58,13 +75,28 @@ export default class IMCore {
     // event.data - 存储 Message 对象的数组 - [Message]
     console.log('接收到一条消息', event)
 
-    // 暴露消息
+    //  待执行函数 -- 暴露消息
     this.messageReceived(event)
   }
 
+  public onReady = () => {}
   public messageReceived = (event: messageReceivedEventProps) => {}
 
-  // 3、发送消息
+  // 3、退出TIM
+  public logoutTIM = () => {
+    // 解绑监听事件
+    this.unbindTIMEvent()
+
+    this.tim?.logout()
+  }
+
+  // 解绑
+  private unbindTIMEvent = () => {
+    this.tim?.off(TIM.EVENT.SDK_READY, () => {})
+    this.tim?.off(TIM.EVENT.MESSAGE_RECEIVED, () => {})
+  }
+
+  // 4、发送消息
   private getTextMessage = (userID: string, payload: getMessageProps) => {
     return this.tim?.createTextMessage({
       to: userID,

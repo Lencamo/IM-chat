@@ -75,7 +75,11 @@ const foldChange = function () {
 
 // 点击退出登录
 const logout = function () {
+  // 退出TIM
+  chatStore.timCore.logoutTIM()
+  // 路由跳转
   router.push('/login')
+  localStorage.removeItem('loginTIMProps')
 }
 </script>
 <style>
