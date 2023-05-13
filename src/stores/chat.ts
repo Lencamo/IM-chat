@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { messageReceivedEventProps } from './plugin/IM-plugin/type'
+import type { messageReceived, messageReceivedEventProps } from './plugin/IM-plugin/type'
 import type { Conversation, Profile } from 'tim-js-sdk'
 
 // interface conversationList {
@@ -19,8 +19,9 @@ export const useChatStore = defineStore('chat', {
 
   state() {
     return {
-      conversationList: [] as Partial<Conversation>[],
-      selectedKeys: [] as string[]
+      conversationList: [] as Partial<Conversation>[], // 会话列表
+      selectedKeys: [] as string[], // 会话选择
+      historyMessage: [] as messageReceived[]
     }
   },
 
@@ -57,9 +58,25 @@ export const useChatStore = defineStore('chat', {
         // this.selectedKeys = ['客服']
       }
 
-      if (this.conversationList[0]?.userProfile?.userID) {
-        this.selectedKeys = [this.conversationList[0]?.userProfile?.userID]
+      const userId = this.conversationList[0]?.userProfile?.userID
+
+      if (userId) {
+        // 选择会话
+        this.selectedKeys = [userId]
+        // 获取会话信息
+        this.getMessageList(userId)
       }
+    },
+
+    async getMessageList(id: string) {
+      const {
+        data: { messageList }
+      } = await this.timCore.tim?.getMessageList({
+        conversationID: `C2C${id}`
+      })
+
+      this.historyMessage = messageList
+      console.log(`C2C${id}的会话信息：`, messageList)
     }
   }
 })

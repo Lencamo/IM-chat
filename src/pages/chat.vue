@@ -13,15 +13,15 @@
           <!-- 循环行 -->
           <div
             class="msg-box"
-            :class="{ 'msg-box_to': item.flow === 'to' }"
-            v-for="item in msgData"
+            :class="{ 'msg-box_to': item.flow === 'out' }"
+            v-for="item in chatLog"
           >
             <!-- 内容项 -->
             <div class="msg-item">
               <div
-                :class="{ triangle_to: item.flow === 'to', triangle_com: item.flow === 'com' }"
+                :class="{ triangle_out: item.flow === 'out', triangle_in: item.flow === 'in' }"
               ></div>
-              {{ item.text }}
+              {{ item.payload.text }}
             </div>
           </div>
         </div>
@@ -39,33 +39,19 @@
 
 <script setup lang="ts">
 import { useChatStore } from '@/stores/chat'
-import { ref } from 'vue'
+import type { messageReceived } from '@/stores/plugin/IM-plugin/type'
+import { computed, ref } from 'vue'
 
 // 引入pinia
 const chatStore = useChatStore()
 
-const msgData = ref([
-  {
-    text: '请问你需要什么资料',
-    flow: 'to'
-  },
-  {
-    text: '可以告诉我吗',
-    flow: 'to'
-  },
-  {
-    text: '王者归来',
-    flow: 'com'
-  },
-  {
-    text: '好的 亲',
-    flow: 'to'
-  },
-  {
-    text: '稍等片刻',
-    flow: 'to'
-  }
-])
+// 当前记录
+const currentChat = ref<messageReceived[]>([])
+
+// 历史记录
+const chatLog = computed<messageReceived[]>(() => {
+  return [...chatStore.historyMessage, ...currentChat.value]
+})
 
 const chatSendMsg = ref('')
 
@@ -73,15 +59,34 @@ const chatSendMsg = ref('')
 const sendMsg = () => {
   console.log(chatSendMsg.value)
   // 默认全部发给admin用户
-  chatStore.timCore.sendMessage('admin', {
+  chatStore.timCore.sendMessage(chatStore.selectedKeys[0], {
     text: chatSendMsg.value
   })
+
+  // 页面显示发生的消息
+  currentChat.value.push({
+    payload: {
+      text: chatSendMsg.value
+    },
+    flow: 'out'
+  })
+
+  // 清空输入框
+  chatSendMsg.value = ''
 }
 
 // SDK准备完毕后 获取会话列表
 chatStore.timCore.onReady = () => {
   chatStore.getSessionList()
 }
+
+// 订阅-接收消息
+chatStore.$onAction(({ name, args }) => {
+  console.log('收到的消息', args)
+  if (name === 'subscribeMessage') {
+    currentChat.value.push(...args[0].data)
+  }
+})
 </script>
 
 <style scoped lang="scss">
@@ -158,7 +163,7 @@ chatStore.timCore.onReady = () => {
           background: skyblue;
 
           position: relative;
-          .triangle_to {
+          .triangle_out {
             position: absolute;
             top: 30%;
             right: -8px;
@@ -170,7 +175,7 @@ chatStore.timCore.onReady = () => {
             border-bottom: 10px solid transparent; /*   猜猜去掉有什么效果？ */
           }
 
-          .triangle_com {
+          .triangle_in {
             position: absolute;
             top: 30%;
             left: -8px;
