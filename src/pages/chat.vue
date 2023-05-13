@@ -2,7 +2,12 @@
   <div class="chat-box">
     <a-card class="chat-card">
       <!-- 左侧用户区 -->
-      <a-menu v-model:selectedKeys="chatStore.selectedKeys" class="chater-list" mode="inline">
+      <a-menu
+        @click="selectMenuFn"
+        v-model:selectedKeys="chatStore.selectedKeys"
+        class="chater-list"
+        mode="inline"
+      >
         <a-menu-item v-for="item in chatStore.conversationList" :key="item.userProfile?.userID">
           {{ item.userProfile?.userID }}
         </a-menu-item>
@@ -30,7 +35,7 @@
           placeholder="请输入聊天内容"
           :auto-size="{ minRows: 2, maxRows: 5 }"
           @pressEnter="sendMsg"
-          v-model:value="chatSendMsg"
+          v-model:value.trim="chatSendMsg"
         />
       </div>
     </a-card>
@@ -39,17 +44,17 @@
 
 <script setup lang="ts">
 import { useChatStore } from '@/stores/chat'
-import type { messageReceived } from '@/stores/plugin/IM-plugin/type'
-import { computed, ref } from 'vue'
+import type { messageType } from '@/stores/plugin/IM-plugin/type'
+import { computed, onMounted, ref } from 'vue'
 
 // 引入pinia
 const chatStore = useChatStore()
 
 // 当前记录
-const currentChat = ref<messageReceived[]>([])
+const currentChat = ref<messageType[]>([])
 
 // 历史记录
-const chatLog = computed<messageReceived[]>(() => {
+const chatLog = computed<messageType[]>(() => {
   return [...chatStore.historyMessage, ...currentChat.value]
 })
 
@@ -73,20 +78,38 @@ const sendMsg = () => {
 
   // 清空输入框
   chatSendMsg.value = ''
+  console.log(chatSendMsg.value.length)
 }
 
-// SDK准备完毕后 获取会话列表
+// SDK准备完毕后 获取会话列表（初次）
 chatStore.timCore.onReady = () => {
   chatStore.getSessionList()
 }
 
-// 订阅-接收消息
-chatStore.$onAction(({ name, args }) => {
-  console.log('收到的消息', args)
-  if (name === 'subscribeMessage') {
-    currentChat.value.push(...args[0].data)
+// 获取会话列表（后续）
+onMounted(async () => {
+  try {
+    await chatStore.getSessionList()
+  } catch (error) {
+    console.info('SDK尚未准备完毕，获取会话列表请稍等')
   }
-})
+}),
+  // 订阅-接收消息
+  chatStore.$onAction(({ name, args }) => {
+    console.log('收到的消息', args)
+    if (name === 'subscribeMessage') {
+      currentChat.value.push(...args[0].data)
+    }
+  })
+
+// menu点击事件
+const selectMenuFn = ({ key }: { key: string }) => {
+  console.log('key的值', key)
+  // 先清除上一选择的会话记录
+  currentChat.value = []
+  // 获取当前选择的历史记录
+  chatStore.getMessageList(key)
+}
 </script>
 
 <style scoped lang="scss">

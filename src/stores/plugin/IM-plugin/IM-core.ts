@@ -75,6 +75,11 @@ export default class IMCore {
     // event.data - 存储 Message 对象的数组 - [Message]
     console.log('接收到一条消息', event)
 
+    // 设置消息已读
+    // this.tim?.setMessageRead({
+    //   conversationID: event.data[0]?.conversationID
+    // })
+
     //  待执行函数 -- 暴露消息
     this.messageReceived(event)
   }

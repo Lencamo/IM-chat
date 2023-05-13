@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { messageReceived, messageReceivedEventProps } from './plugin/IM-plugin/type'
+import type { messageType, messageReceivedEventProps } from './plugin/IM-plugin/type'
 import type { Conversation, Profile } from 'tim-js-sdk'
 
 // interface conversationList {
@@ -21,7 +21,7 @@ export const useChatStore = defineStore('chat', {
     return {
       conversationList: [] as Partial<Conversation>[], // 会话列表
       selectedKeys: [] as string[], // 会话选择
-      historyMessage: [] as messageReceived[]
+      historyMessage: [] as messageType[]
     }
   },
 

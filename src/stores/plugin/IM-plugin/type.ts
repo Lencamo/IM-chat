@@ -11,13 +11,14 @@ export interface loginTIMProps {
 // 接收消息
 export interface messageReceivedEventProps {
   name: string
-  data: messageReceived[]
+  data: messageType[]
 }
 
 // 消息格式
-export interface messageReceived {
+export interface messageType {
   payload: getMessageProps
   flow: 'in' | 'out' // in：来的消息，out：发送的消息
+  // conversationID: string
 }
 
 // 3、发送消息
